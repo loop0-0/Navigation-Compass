@@ -1,0 +1,10 @@
+/* Minimal custom overrides */
+body {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .leaflet-container {
+    background: #f0f2f5; /* Ensure Leaflet map area is visible */
+  }
+  
