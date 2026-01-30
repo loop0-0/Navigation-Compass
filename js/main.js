@@ -85,10 +85,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   /* =============== Recuperer les date debut et fin ============= */
   function getDateRangeFromBikesData(bikesData) {
     if (!bikesData || bikesData.length === 0) return { startDate: null, endDate: null };
-  
+
     // Extraire la première et la dernière date (si les données sont ordonnées)
     const startDate = bikesData.length > 0
-      ? new Date(2021, 11, 1,23,59,59,999)
+      ? new Date(2021, 11, 1, 23, 59, 59, 999)
       : null;
     const endDate = bikesData.length > 0
       ? new Date(bikesData[bikesData.length - 1].year, bikesData[bikesData.length - 1].month - 1, bikesData[bikesData.length - 1].day)
@@ -101,8 +101,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   function switchToExplorer() {
     viewMapCompass.classList.add('hidden');
     viewExplorer.classList.remove('hidden');
-      
-      // Récupérer la plage de dates totale
+    mapExplorer.invalidateSize();
+
+    // Récupérer la plage de dates totale
     const { startDate, endDate } = getDateRangeFromBikesData(globalBikes);
 
     // Définir les valeurs par défaut des champs de filtre
@@ -121,6 +122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   function switchToCompass() {
     viewExplorer.classList.add('hidden');
     viewMapCompass.classList.remove('hidden');
+    mapCompass.invalidateSize();
   }
 
   /* ============== Compass ============== */
@@ -130,9 +132,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       const layer = L.geoJSON(feature, {
         style: {
           color,
-          weight:1,
+          weight: 1,
           fillColor: color,
-          fillOpacity:0.3
+          fillOpacity: 0.3
         }
       }).addTo(mapCompass);
 
@@ -165,7 +167,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const color = '#3498db';
     etabs.features.forEach((etab) => {
       L.geoJSON(etab, {
-        style: { color, weight:1, fillColor:color, fillOpacity:0.2 }
+        style: { color, weight: 1, fillColor: color, fillOpacity: 0.2 }
       }).addTo(mapExplorer);
     });
   }
@@ -181,10 +183,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Surbrillance polygone
     const layer = L.geoJSON(etab, {
       style: {
-        color:'#3498db',
-        weight:2,
-        fillColor:'#3498db',
-        fillOpacity:0.5
+        color: '#3498db',
+        weight: 2,
+        fillColor: '#3498db',
+        fillOpacity: 0.5
       }
     }).addTo(mapExplorer);
 
@@ -196,24 +198,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     mapExplorer.setView([etabLat, etabLng], 15);
 
     // Stations proches
-    const threshold = parseInt(distanceSlider.value,10) || 500;
+    const threshold = parseInt(distanceSlider.value, 10) || 500;
     const stationsProches = [];
     stationsData.forEach(st => {
       const lat = st.latitude;
       const lng = st.longitude;
       const dist = distance(lat, lng, etabLat, etabLng);
-      if(dist <= threshold){
+      if (dist <= threshold) {
         stationsProches.push(st);
         // Création du cercle
         const circleColor = getCircleColorByDistance(dist);
-        const circle = L.circle([lat,lng], {
+        const circle = L.circle([lat, lng], {
           color: circleColor,
           fillColor: circleColor,
           fillOpacity: 0.6,
           radius: getDynamicRadius(mapExplorer.getZoom())
         }).addTo(mapExplorer)
           .bindPopup(`Station ${st.id_velov} à ${Math.round(dist)} m`)
-          .on('click',() => {
+          .on('click', () => {
             selectStation(st);
           });
         stationCircles[st.id_velov] = circle;
@@ -244,7 +246,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   function clearExplorerOverlays() {
     mapExplorer.eachLayer((layer) => {
-      if(layer instanceof L.Circle || layer instanceof L.GeoJSON){
+      if (layer instanceof L.Circle || layer instanceof L.GeoJSON) {
         mapExplorer.removeLayer(layer);
       }
     });
@@ -257,18 +259,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const startHourStr = document.getElementById('start-hour').value;
     const endHourStr = document.getElementById('end-hour').value;
 
-    let startDate=null, endDate=null;
-    if(startDateStr) {
+    let startDate = null, endDate = null;
+    if (startDateStr) {
       startDate = new Date(startDateStr);
-      startDate.setHours(0,0,0,0);
+      startDate.setHours(0, 0, 0, 0);
     }
-    if(endDateStr) {
+    if (endDateStr) {
       endDate = new Date(endDateStr);
-      endDate.setHours(23,59,59,999);
+      endDate.setHours(23, 59, 59, 999);
     }
-    let startHour=null, endHour=null;
-    if(startHourStr !== '') startHour = parseInt(startHourStr,10);
-    if(endHourStr !== '') endHour = parseInt(endHourStr,10);
+    let startHour = null, endHour = null;
+    if (startHourStr !== '') startHour = parseInt(startHourStr, 10);
+    if (endHourStr !== '') endHour = parseInt(endHourStr, 10);
     return { startDate, endDate, startHour, endHour };
   }
 
@@ -280,7 +282,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const interval = setInterval(() => {
       toggle = !toggle;
-      const nextColor = toggle ? '#ff66cc' : baseColor; 
+      const nextColor = toggle ? '#ff66cc' : baseColor;
       circle.setStyle({
         color: nextColor,
         fillColor: nextColor
