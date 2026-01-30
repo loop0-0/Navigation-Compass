@@ -101,7 +101,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   function switchToExplorer() {
     viewMapCompass.classList.add('hidden');
     viewExplorer.classList.remove('hidden');
-    mapExplorer.invalidateSize();
+    // Petit délai pour laisser le temps au DOM de se mettre à jour (display: flex)
+    setTimeout(() => {
+      mapExplorer.invalidateSize();
+    }, 200);
 
     // Récupérer la plage de dates totale
     const { startDate, endDate } = getDateRangeFromBikesData(globalBikes);
@@ -122,7 +125,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   function switchToCompass() {
     viewExplorer.classList.add('hidden');
     viewMapCompass.classList.remove('hidden');
-    mapCompass.invalidateSize();
+    setTimeout(() => {
+      mapCompass.invalidateSize();
+    }, 200);
   }
 
   /* ============== Compass ============== */
