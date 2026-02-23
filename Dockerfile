@@ -12,5 +12,5 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copy the build output from the build-stage
 # Note: The output path depends on the project name in angular.json
 COPY --from=build-stage /app/dist/navigation-compass/browser /usr/share/nginx/html
-EXPOSE 80
+EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]
