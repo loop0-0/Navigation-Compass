@@ -1,0 +1,209 @@
+<div id="view-explorer" class="w-full h-screen flex flex-col font-sans overflow-hidden bg-slate-50 relative">
+
+    <!-- Top Bar -->
+    <div class="h-12 w-full bg-[#EF4444] flex items-center px-6 shadow-md z-30 shrink-0">
+        <h1 (click)="backToMap()"
+            class="text-white font-black text-xl tracking-tight cursor-pointer hover:opacity-80 transition-opacity">
+            UniVelo</h1>
+        <div class="ml-auto text-white/50 text-sm opacity-0">Affichage principal</div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 relative w-full h-full overflow-hidden flex">
+
+        <!-- MAP (Takes full width normally, or 1/3 when sidebar is active) -->
+        <div class="absolute inset-y-0 left-0 z-0 transition-all duration-500 ease-in-out"
+            [ngClass]="(viewMode === 'station' || currentlySelectedEtab) ? 'w-full md:w-1/3' : 'w-full'">
+            <div id="map-explorer" class="absolute inset-0"></div>
+        </div>
+
+        <!-- Floating Station Banner & Filters Toggle -->
+        <div class="absolute top-4 left-4 z-30 flex flex-col items-start gap-2 max-w-[90vw] pointer-events-none">
+            <!-- Top Controls Row -->
+            <div class="flex items-center gap-2 pointer-events-auto flex-wrap">
+                <!-- Dropdown pour Etablissement -->
+                <div class="relative">
+                    <select [ngModel]="currentlySelectedEtab" (ngModelChange)="onEtabSelectChange($event)"
+                        class="bg-[#1D4ED8] text-white flex items-center justify-between px-4 py-3 shadow-lg w-64 md:w-[280px] lg:w-[320px] cursor-pointer hover:bg-blue-800 transition font-bold text-sm outline-none appearance-none truncate pr-10 rounded-sm">
+                        <option [ngValue]="null">Sélectionner un Établissement...</option>
+                        <option *ngFor="let etab of etablissements" [ngValue]="etab">
+                            {{ etab.properties.nom }}
+                        </option>
+                    </select>
+                    <!-- Custom Arrow for Select -->
+                    <div class="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Filter Toggle Button -->
+                <button (click)="toggleFilters()"
+                    class="bg-[#1D4ED8] hover:bg-blue-800 text-white font-bold text-[10px] px-3 py-3 shadow-md uppercase tracking-wide whitespace-nowrap h-full rounded-sm flex items-center gap-2 flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-300"
+                        viewBox="0 0 20 20" fill="currentColor" [class.rotate-180]="showFilters">
+                        <path fill-rule="evenodd"
+                            d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    <span class="hidden md:inline">Filtres</span>
+                </button>
+            </div>
+
+            <!-- Floating Filters Panel -->
+            <div class="bg-white/80 backdrop-blur-xl text-gray-800 p-5 shadow-2xl border border-white/50 rounded-2xl w-[85vw] md:w-[350px] mt-2 relative transition-all duration-400 ease-out origin-top"
+                [ngClass]="showFilters ? 'opacity-100 scale-y-100 translate-y-0 pointer-events-auto' : 'opacity-0 scale-y-95 -translate-y-2 pointer-events-none absolute top-full left-0'">
+                <h2 class="text-xl font-black mb-5 tracking-tight text-[#1D4ED8]">Filtres</h2>
+
+                <!-- Distance Slider -->
+                <div class="mb-5">
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-xs font-bold text-[#1D4ED8] uppercase tracking-wider">Distance
+                            max</label>
+                        <span
+                            class="text-xs font-black text-[#EF4444] bg-red-50 px-2 py-1 rounded-full border border-red-100">{{
+                            distanceMax }}m</span>
+                    </div>
+                    <div class="relative flex items-center h-2">
+                        <input type="range" min="100" max="2000" step="100" [(ngModel)]="distanceMax"
+                            (input)="onFilterChange()"
+                            class="w-full h-[6px] rounded-full appearance-none cursor-pointer bg-[#1D4ED8]"
+                            style="accent-color: #EF4444;">
+                    </div>
+                </div>
+
+                <!-- Temporal Granularity -->
+                <div class="mb-5">
+                    <label class="block text-xs font-bold mb-2 text-[#1D4ED8] uppercase tracking-wider">Granularité
+                        d'Analyse</label>
+                    <div class="grid grid-cols-2 gap-2 mb-3">
+                        <button (click)="temporalGranularity = 'month'; onFilterChange()"
+                            [ngClass]="temporalGranularity === 'month' ? 'bg-[#1D4ED8] text-white border-[#1D4ED8]' : 'bg-white text-gray-600 border-gray-200'"
+                            class="py-2 px-2 text-xs font-bold rounded shadow-sm border transition">
+                            Mois Complet
+                        </button>
+                        <button (click)="temporalGranularity = 'week'; onFilterChange()"
+                            [ngClass]="temporalGranularity === 'week' ? 'bg-[#1D4ED8] text-white border-[#1D4ED8]' : 'bg-white text-gray-600 border-gray-200'"
+                            class="py-2 px-2 text-xs font-bold rounded shadow-sm border transition">
+                            Par Semaine
+                        </button>
+                        <button (click)="temporalGranularity = 'day'; onFilterChange()"
+                            [ngClass]="temporalGranularity === 'day' ? 'bg-[#1D4ED8] text-white border-[#1D4ED8]' : 'bg-white text-gray-600 border-gray-200'"
+                            class="py-2 px-2 text-xs font-bold rounded shadow-sm border transition">
+                            Par Jour
+                        </button>
+                        <button (click)="temporalGranularity = 'interval'; onFilterChange()"
+                            [ngClass]="temporalGranularity === 'interval' ? 'bg-[#1D4ED8] text-white border-[#1D4ED8]' : 'bg-white text-gray-600 border-gray-200'"
+                            class="py-2 px-2 text-xs font-bold rounded shadow-sm border transition">
+                            Intervalle Horaire
+                        </button>
+                    </div>
+
+                    <!-- Sub-filters -->
+                    <div *ngIf="temporalGranularity === 'week'" class="animate-fade-in">
+                        <label class="block text-xs font-bold mb-1 text-gray-600">Choix de la semaine</label>
+                        <select [(ngModel)]="selectedWeek" (change)="onFilterChange()"
+                            class="w-full border-2 border-[#1D4ED8] bg-white px-3 py-2 text-sm text-gray-700 outline-none rounded-sm font-bold">
+                            <option [ngValue]="1">Semaine 1 (1-5 Décembre)</option>
+                            <option [ngValue]="2">Semaine 2 (6-12 Décembre)</option>
+                            <option [ngValue]="3">Semaine 3 (13-19 Décembre)</option>
+                            <option [ngValue]="4">Semaine 4 (20-26 Décembre)</option>
+                            <option [ngValue]="5">Semaine 5 (27-31 Décembre)</option>
+                        </select>
+                    </div>
+
+                    <div *ngIf="temporalGranularity === 'day' || temporalGranularity === 'interval'"
+                        class="animate-fade-in space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold mb-1 text-gray-600">Sélectionner une date</label>
+                            <input type="date" [(ngModel)]="selectedDayStr" min="2021-12-01" max="2021-12-31"
+                                (change)="onFilterChange()"
+                                class="w-full border-2 border-[#1D4ED8] bg-white px-3 py-2 text-sm text-gray-700 outline-none rounded-sm font-bold">
+                        </div>
+                        <div *ngIf="temporalGranularity === 'interval'">
+                            <label class="block text-xs font-bold mb-1 text-gray-600">Intervalle de la journée</label>
+                            <div class="flex items-center gap-2">
+                                <div class="flex-1">
+                                    <input type="number" min="0" max="23" [(ngModel)]="startHourTime"
+                                        (change)="onFilterChange()"
+                                        class="w-full border-2 border-[#1D4ED8] bg-white px-2 py-1 text-sm text-gray-700 outline-none rounded-sm font-bold placeholder-gray-400"
+                                        placeholder="Début (ex: 8)">
+                                    <div class="text-[9px] text-gray-500 mt-1 uppercase text-center font-bold">Heure
+                                        Début</div>
+                                </div>
+                                <div class="font-black text-gray-400 pb-4 text-xs">à</div>
+                                <div class="flex-1">
+                                    <input type="number" min="0" max="23" [(ngModel)]="endHourTime"
+                                        (change)="onFilterChange()"
+                                        class="w-full border-2 border-[#1D4ED8] bg-white px-2 py-1 text-sm text-gray-700 outline-none rounded-sm font-bold placeholder-gray-400"
+                                        placeholder="Fin (ex: 18)">
+                                    <div class="text-[9px] text-gray-500 mt-1 uppercase text-center font-bold">Heure Fin
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-center mt-8">
+                    <button (click)="applyFilters()"
+                        class="bg-[#1D4ED8] hover:bg-blue-800 text-white font-bold py-3 px-10 shadow-lg text-sm transition-transform transform hover:scale-105 rounded-full active:scale-95 cursor-pointer z-50">
+                        APPLIQUER
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT SIDEBAR: VISUALIZATIONS -->
+        <div class="w-full md:w-2/3 h-full bg-slate-50 flex flex-col shrink-0 shadow-[-10px_0_20px_-10px_rgba(0,0,0,0.1)] z-40 absolute right-0 top-0 transition-transform duration-300 ease-in-out"
+            [ngClass]="(viewMode === 'station' || currentlySelectedEtab) ? 'translate-x-0' : 'translate-x-full'">
+
+            <!-- Dashed Blue Border -->
+            <div
+                class="absolute left-0 top-0 bottom-0 w-0 border-l border-dashed border-[#1D4ED8] z-30 pointer-events-none">
+            </div>
+
+            <div class="flex justify-between items-center p-8 pb-4">
+                <h2 class="text-3xl font-black text-[#1D4ED8] tracking-tight">Visualisation</h2>
+                <button (click)="backToGlobal()"
+                    class="text-[#1D4ED8] hover:text-blue-800 p-1.5 bg-white rounded-full border border-[#1D4ED8]/20 shadow-sm transition hover:bg-blue-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Chart Container -->
+            <div class="flex-1 p-8 pt-0 overflow-y-auto w-full">
+                <!-- Wrapper for absolute positioning styling relative to the inner content -->
+                <div class="w-full h-full relative">
+                    <app-charts *ngIf="viewMode === 'station' || currentlySelectedEtab"
+                        [filteredData]="filteredBikesData" [mode]="viewMode" [station]="selectedStation"
+                        [nearbyStations]="nearbyStations" [selectedEtab]="currentlySelectedEtab"
+                        [allEtablissements]="etablissements" [temporalGranularity]="temporalGranularity"
+                        [selectedDayStr]="selectedDayStr" [startHourTime]="startHourTime" [endHourTime]="endHourTime"
+                        [nearbyBikesData]="nearbyBikesData" (backToGlobal)="backToGlobal()">
+                    </app-charts>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Bottom Status -->
+        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none">
+            <div
+                class="bg-[#22C55E] text-white px-6 py-2 rounded-full shadow-lg text-xs font-bold flex items-center justify-center gap-2 pointer-events-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                        clip-rule="evenodd" />
+                </svg>
+                {{ nearbyStationsCount }} Stations correspondantes à la recherche sur {{ totalStations }}
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,38 @@
+/* Leaflet CSS - loaded in angular.json */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom Overrides */
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Outfit', sans-serif;
+}
+
+.leaflet-container {
+    background: #f0f2f5;
+    font-family: 'Outfit', sans-serif;
+}
+
+/* Scrollbar styling for a premium feel */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+}

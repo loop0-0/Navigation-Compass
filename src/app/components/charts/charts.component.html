@@ -1,0 +1,435 @@
+<div class="flex flex-col h-full w-full bg-slate-50 p-6 space-y-6 overflow-y-auto overflow-x-hidden">
+
+    <!-- ============================================== -->
+    <!-- OVERVIEW PANEL: ETABLISSEMENT (Mode Global)    -->
+    <!-- ============================================== -->
+    <ng-container *ngIf="mode === 'global'">
+        <div class="mb-4">
+            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Focus sur un Établissement</h3>
+            <h2 class="text-2xl font-black text-[#1D4ED8] tracking-tight">{{ selectedEtab?.properties?.nom ||
+                'Établissement' }}</h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <!-- Mes Voisins -->
+            <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100 flex flex-col relative z-20 group">
+                <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center justify-between">Mes Voisins
+                    <svg tabindex="0" xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 text-gray-400 cursor-pointer outline-none transition-colors group-focus-within:text-[#1D4ED8]"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </h4>
+                <div
+                    class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 top-12 right-0 bg-black text-white text-xs rounded py-2 px-3 w-64 shadow-2xl z-50 pointer-events-none">
+                    Liste des autres établissements dans la même zone d'influence.
+                    <div class="absolute -top-1 right-2 w-2 h-2 bg-black rotate-45"></div>
+                </div>
+                <div class="flex-1 overflow-y-auto h-[300px]" id="d1-voisins-container"></div>
+            </div>
+
+            <!-- Top 3 (Heures d'affluence) -->
+            <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100 flex flex-col relative z-20 group">
+                <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center justify-between">Top 10 Heures
+                    d'affluence
+                    <svg tabindex="0" xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 text-gray-400 cursor-pointer outline-none transition-colors group-focus-within:text-[#1D4ED8]"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </h4>
+                <div
+                    class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 top-12 right-0 bg-black text-white text-xs rounded py-2 px-3 w-64 shadow-2xl z-50 pointer-events-none">
+                    Les 10 créneaux horaires enregistrant le plus de mouvements sur le quartier.
+                    <div class="absolute -top-1 right-2 w-2 h-2 bg-black rotate-45"></div>
+                </div>
+                <div class="flex-1 flex flex-col justify-start space-y-1 min-h-[300px] overflow-y-auto"
+                    id="d1-top3-container"></div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <!-- Match Jours -->
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 relative z-10 group">
+                <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center justify-between">Le Match des Jours
+                    <svg tabindex="0" xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 text-gray-400 cursor-pointer outline-none transition-colors group-focus-within:text-[#1D4ED8]"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </h4>
+                <div
+                    class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 top-12 right-0 bg-black text-white text-xs rounded py-2 px-3 w-64 shadow-2xl z-50 pointer-events-none">
+                    Volume de mouvements moyens pour le quartier par jour de la semaine.
+                    <div class="absolute -top-1 right-2 w-2 h-2 bg-black rotate-45"></div>
+                </div>
+                <div class="w-full h-[220px]" #d1MatchJours></div>
+            </div>
+
+            <!-- Score Multicritère -->
+            <div
+                class="bg-white rounded-xl shadow-sm p-4 border border-gray-100 flex flex-col items-center relative z-10 group">
+                <h4 class="text-sm font-bold text-gray-800 mb-3 w-full flex items-center justify-between">Score
+                    Multicritère
+                </h4>
+                <div class="w-full h-[220px]" #d1RadarChart></div>
+            </div>
+
+            <!-- Disponibilité Globale -->
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 relative z-10 group">
+                <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center justify-between">Disponibilité Globale
+                    <svg tabindex="0" xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 text-gray-400 cursor-pointer outline-none transition-colors group-focus-within:text-[#1D4ED8]"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </h4>
+                <div
+                    class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 top-12 right-0 bg-black text-white text-xs rounded py-2 px-3 w-64 shadow-2xl z-50 pointer-events-none">
+                    Répartition du temps où le quartier est en pénurie globale (<10% de vélos dispos), normal, ou saturé
+                        (> 90%).
+                        <div class="absolute -top-1 right-2 w-2 h-2 bg-black rotate-45"></div>
+                </div>
+                <div class="w-full h-[220px]" #d1DispoDistribution></div>
+            </div>
+        </div>
+
+        <!-- Journee type -->
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 mb-6 relative z-10 group">
+            <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center justify-between">
+                {{ temporalGranularity === 'day' ? 'Évolution de la journée (' + selectedDayStr + ')' : 'La Journée Type
+                (Moyenne)' }}
+            </h4>
+            <div class="w-full h-[260px]" #d1LineChart></div>
+        </div>
+
+        <!-- Chassé-Croisé -->
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 relative z-10 group mb-6">
+            <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center justify-between">Chassé-Croisé
+                <svg tabindex="0" xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 text-gray-400 cursor-pointer outline-none transition-colors group-focus-within:text-[#1D4ED8]"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </h4>
+            <div
+                class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 top-12 right-0 bg-black text-white text-xs rounded py-2 px-3 w-64 shadow-2xl z-50 pointer-events-none">
+                Arrivées (Vert) vs Départs (Orange).
+                <div class="absolute -top-1 right-2 w-2 h-2 bg-black rotate-45"></div>
+            </div>
+            <div class="w-full h-[240px]" #d1StackedArea></div>
+        </div>
+
+        <!-- Baromètre -->
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 relative z-10 group mb-6 w-full">
+            <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center justify-between">Baromètre (Dispos)
+            </h4>
+            <div class="w-full h-[300px]" #d1Heatmap></div>
+        </div>
+
+        <!-- Activity Heatmap -->
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 relative z-10 group mb-6 w-full">
+            <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center justify-between">Activité (Intensité)
+                <svg tabindex="0" xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 text-gray-400 cursor-pointer outline-none transition-colors group-focus-within:text-[#1D4ED8]"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </h4>
+            <div
+                class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 top-12 right-0 bg-black text-white text-xs rounded py-2 px-3 w-64 shadow-2xl z-50 pointer-events-none">
+                Intensité des arrivées et départs cumulés selon le jour et l'heure (en Orange).
+                <div class="absolute -top-1 right-2 w-2 h-2 bg-black rotate-45"></div>
+            </div>
+            <div class="w-full h-[300px]" #d1ActivityHeatmap></div>
+        </div>
+    </ng-container>
+
+    <!-- ============================================== -->
+    <!-- STATION PANEL: FOCUS STATION (Mode Station)    -->
+    <!-- ============================================== -->
+    <ng-container *ngIf="mode === 'station'">
+        <div class="mb-4 flex justify-between items-start">
+            <div>
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Focus sur une Station</h3>
+                <h2 class="text-2xl font-black text-[#1D4ED8] tracking-tight">{{ station?.name?.replace(' - ', ' ') ||
+                    'Station Velo\'v' }}</h2>
+                <p class="text-gray-500 text-sm mt-1">{{ station?.address || 'Adresse' }}</p>
+            </div>
+            <button (click)="onBackToGlobal()"
+                class="flex items-center gap-2 bg-[#1D4ED8] hover:bg-blue-800 text-white px-4 py-2 rounded-lg text-xs font-bold transition-all shadow-md active:scale-95 whitespace-nowrap">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+                </svg>
+                Retour à l'Établissement
+            </button>
+        </div>
+
+        <!-- KPIs: Carte d'identité, Saturation & Pannes Sèches -->
+        <div class="grid grid-cols-3 gap-4 mb-6">
+            <!-- 1. La Carte d'Identité -->
+            <div
+                class="bg-white rounded-xl shadow-sm p-4 border border-gray-100 flex flex-col justify-center items-center relative z-10 group">
+                <svg tabindex="0" xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 text-gray-400 cursor-pointer outline-none  absolute top-2 right-2 transition-colors group-focus-within:text-[#1D4ED8]"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <!-- Tooltip -->
+                <div
+                    class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 -top-8 right-8 bg-black text-white text-xs rounded py-2 px-3 w-48 shadow-2xl z-50 pointer-events-none">
+                    Nombre total maximum de vélos que cette station peut accueillir.
+                </div>
+
+                <div class="text-[10px] uppercase font-bold text-gray-400 mb-2 mt-4">Total Places</div>
+                <div class="text-4xl font-black text-[#1D4ED8]" id="d2-total-places">{{ station?.bike_stands || 0 }}
+                </div>
+            </div>
+
+            <!-- 10. Jauge Saturation -->
+            <div
+                class="bg-white rounded-xl shadow-sm p-4 border border-gray-100 flex flex-col items-center justify-center relative z-10 group">
+                <svg tabindex="0" xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 text-gray-400 cursor-pointer outline-none  absolute top-2 right-2 transition-colors group-focus-within:text-[#1D4ED8]"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <!-- Tooltip -->
+                <div
+                    class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 top-10 right-0 bg-black text-white text-xs rounded py-2 px-3 w-64 shadow-2xl z-50 pointer-events-none text-left">
+                    Niveau moyen d'occupation de la station. Au-delà de 90%, la station est souvent saturée; en
+                    dessous de 10%, elle est souvent en pénurie.
+                    <div class="absolute -top-1 right-2 w-2 h-2 bg-black rotate-45"></div>
+                </div>
+                <h4 class="text-xs font-bold text-gray-800 mb-4 w-full text-center mt-2">Taux d'occupation</h4>
+                <div class="w-full h-4 bg-gray-100 rounded-full overflow-hidden relative" id="d2-saturation-bg">
+                    <div class="absolute left-0 top-0 bottom-0 bg-[#EF4444] transition-all duration-1000"
+                        id="d2-saturation-bar" style="width: 0%;"></div>
+                </div>
+                <div class="text-[10px] font-bold mt-2" id="d2-saturation-text">0% Plein (Moyenne)</div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100 flex flex-col relative z-20 group">
+                <svg tabindex="0" xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 text-gray-400 cursor-pointer outline-none  absolute top-2 right-2 transition-colors group-focus-within:text-[#1D4ED8]"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <!-- Tooltip -->
+                <div
+                    class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 top-10 right-0 bg-black text-white text-xs rounded py-2 px-3 w-56 shadow-2xl z-50 pointer-events-none">
+                    Les 3 nuits ou jours spécifiques ayant comptabilisé le plus d'heures consécutives avec '0' vélo.
+                    <div class="absolute -top-1 right-2 w-2 h-2 bg-black rotate-45"></div>
+                </div>
+                <h4 class="text-xs font-bold text-[#EF4444] mb-3 mt-2 tracking-tight">Top 3 Pannes Sèches</h4>
+                <div class="flex-1 flex flex-col justify-center space-y-3" id="d2-pannes-container">
+                    <!-- Pannes List -->
+                </div>
+            </div>
+        </div>
+        <!-- 2. La Courbe de Respiration -->
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 mb-6 relative z-10 group">
+            <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center justify-between">
+                {{ temporalGranularity === 'day' ? 'Mouvements sur la journée (' + selectedDayStr + ')' :
+                (temporalGranularity === 'interval' ? 'Mouvements de ' + startHourTime + 'h à ' + endHourTime + 'h
+                (' + selectedDayStr + ')' : 'La Courbe de Respiration' ) }}
+                <svg tabindex="0" xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 text-gray-400 cursor-pointer outline-none  transition-colors group-focus-within:text-[#1D4ED8]"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </h4>
+            <!-- Tooltip -->
+            <div
+                class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 top-12 right-4 bg-black text-white text-xs rounded py-2 px-3 w-64 shadow-2xl z-50 pointer-events-none">
+                Ligne d'évolution de la disponibilité moyenne sur 24H pour cette unique station. Comment la station
+                se 'remplit' ou se 'vide'.
+                <div class="absolute -top-1 right-2 w-2 h-2 bg-black rotate-45"></div>
+            </div>
+            <div class="w-full h-[180px]" #d2LineChart></div>
+        </div>
+
+        <!-- 5. Entrées vs Sorties -->
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 mb-6 relative z-10 group">
+            <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center justify-between">Entrées vs Sorties
+                (Débit)
+                <svg tabindex="0" xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 text-gray-400 cursor-pointer outline-none  transition-colors group-focus-within:text-[#1D4ED8]"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </h4>
+            <!-- Tooltip -->
+            <div
+                class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 top-12 right-4 bg-black text-white text-xs rounded py-2 px-3 w-64 shadow-2xl z-50 pointer-events-none">
+                Volume cumulé des dépôts de vélos (Vert) et retraits de vélos (Orange) par tranche horaire moyenne.
+                <div class="absolute -top-1 right-2 w-2 h-2 bg-black rotate-45"></div>
+            </div>
+            <div class="w-full h-[200px]" #d2StackedBar></div>
+        </div>
+
+        <!-- 8. Semaine vs Week-end -->
+        <div *ngIf="temporalGranularity !== 'day' && temporalGranularity !== 'interval'"
+            class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 relative z-10 group">
+            <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center justify-between">Semaine vs Week-end
+                <svg tabindex="0" xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4 text-gray-400 cursor-pointer outline-none  transition-colors group-focus-within:text-[#1D4ED8]"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </h4>
+            <!-- Tooltip -->
+            <div
+                class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 top-12 right-4 bg-black text-white text-xs rounded py-2 px-3 w-64 shadow-2xl z-50 pointer-events-none">
+                Superpose la Courbe de Respiration en semaine (Bleu) face au Week-end (Vert pointillé). Utile pour
+                repérer les stations étudiantes (calme le week-end).
+                <div class="absolute -top-1 right-2 w-2 h-2 bg-black rotate-45"></div>
+            </div>
+            <div class="w-full h-[180px]" #d2DualLine></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <!-- Nouvel Encart: Taux de Rotation -->
+            <div
+                class="bg-white rounded-xl shadow-sm p-4 border border-gray-100 flex flex-col items-center justify-center relative z-10 group text-center">
+                <h4 class="text-xs font-bold text-gray-800 mb-2 w-full text-center">Taux de Rotation (Quotidien)</h4>
+                <div class="text-[10px] uppercase font-bold text-gray-400 mb-2">Utilisations moyennes par place</div>
+                <div class="text-3xl font-black text-[#10B981]" id="d2-rotation">0x / jour</div>
+                <!-- Tooltip -->
+                <div class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 top-10 bg-black text-white text-xs rounded py-2 px-3 w-64 shadow-2xl z-50 pointer-events-none"
+                    style="left: 50%; transform: translateX(-50%);">
+                    Mesure le dynamisme de la station: (Total Entrées + Total Sorties journalier) divisé par le nombre
+                    capacitaire de vélovs.
+                    <div class="absolute -top-1 w-2 h-2 bg-black rotate-45"
+                        style="left: 50%; transform: translateX(-50%);">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nouvel Encart: Record d'Activité -->
+            <div
+                class="bg-white rounded-xl shadow-sm p-4 border border-gray-100 flex flex-col items-center justify-center relative z-10 group text-center">
+                <h4 class="text-xs font-bold text-gray-800 mb-2 w-full text-center">Record d'Activité (Pic 1H)</h4>
+                <div class="text-[10px] uppercase font-bold text-[#F59E0B] mb-2" id="d2-record-date">...</div>
+                <div class="text-3xl font-black text-[#F59E0B]" id="d2-record-value">0</div>
+                <div class="text-[10px] text-gray-400 mt-1">mouvements en 1h</div>
+                <!-- Tooltip -->
+                <div class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 top-10 bg-black text-white text-xs rounded py-2 px-3 w-64 shadow-2xl z-50 pointer-events-none"
+                    style="left: 50%; transform: translateX(-50%);">
+                    Le pic absolu d'entrées et sorties cumulées sur une seule tranche horaire pour cette station durant
+                    la période sélectionnée.
+                    <div class="absolute -top-1 w-2 h-2 bg-black rotate-45"
+                        style="left: 50%; transform: translateX(-50%);">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <!-- Nouvel Encart: Répartition des États -->
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 flex flex-col relative z-10 group">
+                <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center justify-between">Répartition des États
+                </h4>
+                <div class="w-full flex-1 min-h-[160px]" #d2PieChart></div>
+                <!-- Tooltip -->
+                <div class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 top-12 bg-black text-white text-xs rounded py-2 px-3 w-64 shadow-2xl z-50 pointer-events-none"
+                    style="left: 50%; transform: translateX(-50%);">
+                    Pourcentage du temps où la station a été considérée comme Presque Vide (<10% vélos), Normale
+                        (10-90%), ou Saturée (>90%).
+                        <div class="absolute -top-1 w-2 h-2 bg-black rotate-45"
+                            style="left: 50%; transform: translateX(-50%);">
+                        </div>
+                </div>
+            </div>
+
+            <!-- Nouvel Encart: Probabilité de Trouver un Vélo -->
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 flex flex-col relative z-10 group">
+                <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center justify-between">Chances de Trouver un
+                    Vélo</h4>
+                <div class="w-full flex-1 min-h-[160px]" #d2HeureJourHeatmap></div>
+                <!-- Tooltip -->
+                <div class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 top-12 bg-black text-white text-xs rounded py-2 px-3 w-64 shadow-2xl z-50 pointer-events-none"
+                    style="left: 50%; transform: translateX(-50%);">
+                    Matrice Horaire par Jour illustrant le bon endroit (en vert) pour espérer dégoter un vélo, ou une
+                    pénurie fréquente (rouge).
+                    <div class="absolute -top-1 w-2 h-2 bg-black rotate-45"
+                        style="left: 50%; transform: translateX(-50%);">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nouvel Encart: Station vs Quartier (Voisins) -->
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 mb-6 relative z-10 group">
+            <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center justify-between">Station sélectionnée vs
+                Quartier (Top 3 Voisins)</h4>
+            <div class="w-full h-[180px]" #d2VoisinsLine></div>
+            <!-- Tooltip -->
+            <div
+                class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 top-12 right-4 bg-black text-white text-xs rounded py-2 px-3 w-64 shadow-2xl z-50 pointer-events-none">
+                La Courbe de Respiration de CETTE station (Bleu) superposée à la moyenne de ses 3 stations les plus
+                proches (Orange), indiquant si elle se comporte comme son Quartier.
+                <div class="absolute -top-1 right-2 w-2 h-2 bg-black rotate-45"></div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <!-- 3. Le Match des Jours -->
+            <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 flex flex-col relative z-10 group">
+                <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center justify-between">Le Match des Jours
+                    <svg tabindex="0" xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 text-gray-400 cursor-pointer outline-none  transition-colors group-focus-within:text-[#1D4ED8]"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </h4>
+                <!-- Tooltip -->
+                <div
+                    class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 top-12 right-4 bg-black text-white text-xs rounded py-2 px-3 w-64 shadow-2xl z-50 pointer-events-none">
+                    Le volume d'utilisation de la station du lundi au dimanche en moyenne. Permet d'identifier d'un coup
+                    d'oeil le jour le plus chargé.
+                    <div class="absolute -top-1 right-2 w-2 h-2 bg-black rotate-45"></div>
+                </div>
+                <div class="w-full flex-1 min-h-[180px]" #d2BarChart></div>
+            </div>
+
+            <!-- 7. Qui utilise cette station ? -->
+            <div
+                class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 flex flex-col items-center relative z-10 group">
+                <h4
+                    class="text-sm font-bold text-gray-800 mb-3 w-full text-center flex items-center justify-center gap-2">
+                    Qui utilise cette station ?
+                    <svg tabindex="0" xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 text-gray-400 cursor-pointer outline-none  transition-colors group-focus-within:text-[#1D4ED8]"
+                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </h4>
+                <!-- Tooltip -->
+                <div class="absolute opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 top-12 bg-black text-white text-xs rounded py-2 px-3 w-64 shadow-2xl z-50 pointer-events-none"
+                    style="left: 50%; transform: translateX(-50%);">
+                    Une mini-carte (Radar de proximité) pointant la station au centre, entourée par les établissements
+                    d'enseignement situés à moins de 500m (utilisateurs probables).
+                    <div class="absolute -top-1 w-2 h-2 bg-black rotate-45"
+                        style="left: 50%; transform: translateX(-50%);">
+                    </div>
+                </div>
+                <div class="w-full flex-1 min-h-[180px] flex items-center justify-center" #d2RadarUsers></div>
+            </div>
+        </div>
